@@ -48,7 +48,7 @@ public class PostController {
     Возвращает: шаблон "post.html"
     используется модель для заполнения шаблона: "post" - модель поста (id, title, text, imagePath, likesCount, comments)
     */
-    @GetMapping
+    @GetMapping("/{id}")
     public String getPost(Long id, Model model) {
         PostDto post = postService.getPostDtoById(id);
         model.addAttribute("post", post);
@@ -59,8 +59,8 @@ public class PostController {
     GET "/images/{id}" -эндпоинт, возвращающий набор байт картинки поста
     Параметры: "id" - идентификатор поста
     */
-    @GetMapping
-    public BufferedImage getImage(Long id) {
+    @GetMapping("/images/{id}")
+    public byte[] getImage(Long id) {
         return postService.getPostById(id).getImage();
     }
 

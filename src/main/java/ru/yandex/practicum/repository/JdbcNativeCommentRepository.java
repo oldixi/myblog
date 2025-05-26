@@ -16,13 +16,11 @@ public class JdbcNativeCommentRepository implements CommentRepository {
     public List<Comment> getPostComments(Long postId) {
         return jdbcTemplate.query(
                 "select id, comment_text, post_id from comment where post_id = ?",
-                (rs, rowNum) -> {
-                    return Comment.builder()
-                            .id(rs.getLong("id"))
-                            .commentText(rs.getString("commentText"))
-                            .postId(rs.getLong("postId"))
-                            .build();
-                }, postId);
+                (rs, rowNum) -> Comment.builder()
+                        .id(rs.getLong("id"))
+                        .commentText(rs.getString("comment_text"))
+                        .postId(rs.getLong("post_id"))
+                        .build(), postId);
     }
 
     @Override

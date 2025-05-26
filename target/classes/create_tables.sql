@@ -1,4 +1,4 @@
-drop table post;
+drop table post cascade;
 create table post(
     id bigserial primary key,
     name varchar(250) not null,

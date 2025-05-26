@@ -18,5 +18,6 @@ public class PostDto {
     private String text;
     private String imagePath;
     private int likesCount;
+    private String tags;
     private List<Comment> comments  = new ArrayList<>();
 }

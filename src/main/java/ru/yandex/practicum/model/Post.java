@@ -12,7 +12,8 @@ import java.awt.image.BufferedImage;
 public class Post {
     @EqualsAndHashCode.Include
     private Long id;
-    private BufferedImage image;
+    //private BufferedImage image;
+    private byte[] image;
     private String title;
     private String text;
     private String tags;

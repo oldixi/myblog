@@ -47,7 +47,7 @@ public class PostService {
 
     public void likePostById(Long id, boolean like) {
         Post post = getPostById(id);
-        post.setLikesCount(like ? post.getLikesCount() + 1 : post.getLikesCount() - 1);
+        post.setLikesCount(like ? post.getLikesCount() + 1 : (post.getLikesCount() > 0 ? post.getLikesCount() - 1 : 0));
         postRepository.editById(id, post);
     }
 
@@ -56,6 +56,6 @@ public class PostService {
     }
 
     public PostDto getPostDtoById(Long id) {
-        return postMapper.toDto(postRepository.getById(id).orElse(new Post()));
+        return postMapper.toDto(getPostById(id));
     }
 }
