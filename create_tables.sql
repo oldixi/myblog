@@ -1,4 +1,3 @@
-select version();
 drop table post;
 create table post(
     id bigserial primary key,
