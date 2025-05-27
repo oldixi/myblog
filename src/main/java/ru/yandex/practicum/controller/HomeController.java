@@ -13,7 +13,6 @@ public class HomeController {
     }
 
     @GetMapping("/")
-    @ResponseBody
     public String redirectPosts() {
         return "redirect:/posts";
     }

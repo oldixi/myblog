@@ -1,6 +1,6 @@
 package ru.yandex.practicum.repository;
 
-import ru.yandex.practicum.model.Comment;
+import ru.yandex.practicum.model.entity.Comment;
 
 import java.util.List;
 

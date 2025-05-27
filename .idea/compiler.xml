@@ -7,10 +7,11 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="myblog" />
+        <module name="blog" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
+      <module name="myblog" target="21" />
       <module name="tomcat-servlet" target="21" />
     </bytecodeTargetLevel>
   </component>

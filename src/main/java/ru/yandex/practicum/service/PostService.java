@@ -2,11 +2,13 @@ package ru.yandex.practicum.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.dto.PostDto;
+import org.springframework.transaction.annotation.Transactional;
+import ru.yandex.practicum.model.dto.PostFullDto;
+import ru.yandex.practicum.model.dto.PostDto;
 import ru.yandex.practicum.mapper.PostMapper;
-import ru.yandex.practicum.model.PagingParameters;
-import ru.yandex.practicum.model.Post;
-import ru.yandex.practicum.model.PostsWithParams;
+import ru.yandex.practicum.model.dto.PagingParametersDto;
+import ru.yandex.practicum.model.entity.Post;
+import ru.yandex.practicum.model.dto.PostsWithParamsDto;
 import ru.yandex.practicum.repository.PostRepository;
 
 import java.util.List;
@@ -18,44 +20,52 @@ public class PostService {
     private final CommentService commentService;
     private final PostMapper postMapper;
 
-    public PostsWithParams getPosts(String search, int pageNumber, int pageSize) {
+    public PostsWithParamsDto getPosts(String search, int pageNumber, int pageSize) {
         //Pageable page = PageRequest.of(pageNumber, pageSize, Sort.by(Sort.Direction.DESC, "id"));
         List<Post> fullPosts = postRepository.getPosts(search, pageNumber * pageSize);
         List<Post> subPosts = fullPosts.subList((pageNumber - 1) * pageSize - 1, fullPosts.size() - 1);
-        List<PostDto> posts = postMapper.toListDto(subPosts);
+        List<PostFullDto> posts = postMapper.toListDto(subPosts);
         posts.forEach(post -> post.setComments(commentService.getPostComments(post.getId())));
-        PagingParameters pagingParameters = PagingParameters.builder()
+        PagingParametersDto pagingParametersDto = PagingParametersDto.builder()
                 .pageNumber(pageNumber)
                 .pageSize(pageSize)
                 .hasPrevious(pageNumber > 1)
                 .hasNext(pageNumber < Math.ceilDiv(posts.size(), pageSize))
                 .build();
-        return new PostsWithParams(posts, search, pagingParameters);
+        return new PostsWithParamsDto(posts, search, pagingParametersDto);
     }
 
-    public void savePost(PostDto post) {
-        postRepository.save(postMapper.to(post));
+    @Transactional
+    public Post savePost(PostDto post) {
+        return postRepository.getById(postRepository.save(postMapper.toPost(post))).orElse(new Post());
     }
 
+    @Transactional
     public void deletePostById(Long id) {
         postRepository.deleteById(id);
     }
 
+    @Transactional
     public void editPostById(Long id, PostDto post) {
-        postRepository.editById(id, postMapper.to(post));
+        postRepository.editById(id, postMapper.toPost(post));
     }
 
+    @Transactional
     public void likePostById(Long id, boolean like) {
         Post post = getPostById(id);
-        post.setLikesCount(like ? post.getLikesCount() + 1 : (post.getLikesCount() > 0 ? post.getLikesCount() - 1 : 0));
-        postRepository.editById(id, post);
+        int currentLikesCount = post.getLikesCount();
+        postRepository.likeById(id, (like ? currentLikesCount + 1 : (currentLikesCount > 0 ? currentLikesCount - 1 : 0)));
     }
 
     public Post getPostById(Long id) {
         return postRepository.getById(id).orElse(new Post());
     }
 
-    public PostDto getPostDtoById(Long id) {
+    public byte[] getImage(Long id) {
+        return postRepository.getById(id).orElse(new Post()).getImage();
+    }
+
+    public PostFullDto getPostDtoById(Long id) {
         return postMapper.toDto(getPostById(id));
     }
 }

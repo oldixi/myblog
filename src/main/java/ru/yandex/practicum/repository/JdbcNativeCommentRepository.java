@@ -3,7 +3,7 @@ package ru.yandex.practicum.repository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
-import ru.yandex.practicum.model.Comment;
+import ru.yandex.practicum.model.entity.Comment;
 
 import java.util.List;
 

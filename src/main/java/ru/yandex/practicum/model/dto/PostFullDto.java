@@ -1,7 +1,7 @@
-package ru.yandex.practicum.dto;
+package ru.yandex.practicum.model.dto;
 
 import lombok.*;
-import ru.yandex.practicum.model.Comment;
+import ru.yandex.practicum.model.entity.Comment;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,12 +11,12 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-public class PostDto {
+public class PostFullDto {
     @EqualsAndHashCode.Include
     private Long id;
     private String title;
-    private String text;
-    private String imagePath;
+    private String textPreview;
+    //private String imagePath;
     private int likesCount;
     private String tags;
     private List<Comment> comments  = new ArrayList<>();

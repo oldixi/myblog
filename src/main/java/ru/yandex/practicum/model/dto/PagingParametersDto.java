@@ -1,11 +1,11 @@
-package ru.yandex.practicum.model;
+package ru.yandex.practicum.model.dto;
 
 import lombok.Builder;
 import lombok.Data;
 
 @Data
 @Builder
-public class PagingParameters {
+public class PagingParametersDto {
     private int pageNumber;
     private int pageSize;
     private boolean hasNext;

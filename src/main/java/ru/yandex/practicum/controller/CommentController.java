@@ -8,6 +8,7 @@ import ru.yandex.practicum.service.CommentService;
 @Controller
 @RequestMapping("/posts")
 @RequiredArgsConstructor
+@ResponseBody
 public class CommentController {
     private final CommentService commentService;
 
@@ -17,8 +18,7 @@ public class CommentController {
     Возвращает: редирект на "/posts/{id}"
     */
     @PostMapping("/{id}/comments")
-    @ResponseBody
-    public String addComment(@PathVariable Long id, @RequestBody String text) {
+    public String addComment(@PathVariable("id") Long id, @RequestBody String text) {
         commentService.save(id, text);
         return "redirect:/posts/"+id;
     }
@@ -29,7 +29,7 @@ public class CommentController {
     Возвращает: редирект на "/posts/{id}"
     */
     @PostMapping(value = "/{id}/comments/{commentId}/delete")
-    public String deleteComment(@PathVariable Long id, @PathVariable Long commentId) {
+    public String deleteComment(@PathVariable("id") Long id, @PathVariable("commentId") Long commentId) {
         commentService.deleteById(commentId);
         return "redirect:/posts/"+id;
     }
@@ -40,7 +40,7 @@ public class CommentController {
     Возвращает: редирект на "/posts/{id}"
     */
     @PostMapping(value = "/{id}/comments/{commentId}")
-    public String editComment(@PathVariable Long id, @PathVariable Long commentId, @RequestBody String text) {
+    public String editComment(@PathVariable("id") Long id, @PathVariable("commentId") Long commentId, @RequestBody String text) {
         commentService.edit(id, commentId, text);
         return "redirect:/posts/"+id;
     }

@@ -1,21 +1,18 @@
-package ru.yandex.practicum.model;
+package ru.yandex.practicum.model.dto;
 
 import lombok.*;
-
-import java.awt.image.BufferedImage;
+import org.springframework.web.multipart.MultipartFile;
 
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-public class Post {
+public class PostDto {
     @EqualsAndHashCode.Include
     private Long id;
-    //private BufferedImage image;
-    private byte[] image;
     private String title;
     private String text;
+    private MultipartFile image;
     private String tags;
-    private int likesCount;
 }

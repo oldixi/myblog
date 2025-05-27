@@ -2,7 +2,8 @@ package ru.yandex.practicum.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.model.Comment;
+import org.springframework.transaction.annotation.Transactional;
+import ru.yandex.practicum.model.entity.Comment;
 import ru.yandex.practicum.repository.CommentRepository;
 
 import java.util.List;
@@ -16,6 +17,7 @@ public class CommentService {
         return commentRepository.getPostComments(postId);
     }
 
+    @Transactional
     public void save(Long postId, String text) {
         Comment comment = Comment.builder()
                 .commentText(text)
@@ -24,14 +26,17 @@ public class CommentService {
         commentRepository.save(comment);
     }
 
+    @Transactional
     public void edit(Long postId, Long id, String text) {
         Comment comment = Comment.builder()
                 .postId(postId)
+                .commentText(text)
                 .id(id)
                 .build();
         commentRepository.editById(id, comment);
     }
 
+    @Transactional
     public void deleteById(Long id) {
         commentRepository.deleteById(id);
     }

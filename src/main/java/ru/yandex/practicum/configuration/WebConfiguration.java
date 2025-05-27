@@ -1,7 +1,5 @@
 package ru.yandex.practicum.configuration;
 
-import org.modelmapper.ModelMapper;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
@@ -12,8 +10,13 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 @ComponentScan(basePackages = {"ru.yandex.practicum"})
 @PropertySource("classpath:application.properties")
 public class WebConfiguration {
-    @Bean()
-    public ModelMapper modelMapper() {
-        return new ModelMapper();
+/*    @Bean
+    public RedirectView redirectView() {
+        return new RedirectView(url);
     }
+
+    @Bean
+    public InternalResourceViewResolver internalResourceViewResolver() {
+        return new InternalResourceViewResolver();
+    }*/
 }

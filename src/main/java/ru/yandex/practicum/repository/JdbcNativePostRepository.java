@@ -1,22 +1,26 @@
 package ru.yandex.practicum.repository;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
-import ru.yandex.practicum.model.Post;
+import ru.yandex.practicum.model.entity.Post;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
+@Slf4j
 public class JdbcNativePostRepository implements PostRepository {
     private final JdbcTemplate jdbcTemplate;
 
     @Override
     public List<Post> getPosts(String search, int limit) {
+        System.out.println("Start getPosts: search=" + search + ", limit=" + limit);
         return jdbcTemplate.query(
-                "select id, name, post_text, tags, likes_count, picture from post where tags like '%?%' order by id desc limit ?",
+                "select id, name, post_text, tags, likes_count, picture from post where tags like '%'||?||'%' order by id desc limit ?",
                 (rs, rowNum) -> {
                     Post post = Post.builder()
                             .id(rs.getLong("id"))
@@ -26,18 +30,13 @@ public class JdbcNativePostRepository implements PostRepository {
                             .likesCount(rs.getInt("likes_count"))
                             .build();
                     try {
-                        /*Blob imageFromDb = rs.getBlob("picture");
-                        if (imageFromDb != null) {
-                            post.setImage(ImageIO.read(imageFromDb.getBinaryStream()));
-                        }*/
                         if (rs.getBytes("picture") != null) {
                             System.out.println("Устанавливаем картинку");
-                            //post.setImage(ImageIO.read(rs.getBytes("picture")));
                             post.setImage(rs.getBytes("picture"));
                             System.out.println("Устанавили картинку");
                         }
                     } catch (IllegalArgumentException ignored) {
-                        System.out.println("Не смогли прочитать картинку у поста id=" + post.getId());
+                        log.error("Не смогли прочитать картинку у поста id={}", post.getId());
                     }
                     return post;
                 }, search, limit);
@@ -56,42 +55,43 @@ public class JdbcNativePostRepository implements PostRepository {
                                 .tags(rs.getString("tags"))
                                 .likesCount(rs.getInt("likes_count"))
                                 .build();
-                        System.out.println("Смотрим пост id=" + post.getId());
                         try {
-                            /*if (!Objects.equals(rs.getBinaryStream("picture"), InputStream.nullInputStream())) {
-                                System.out.println("Устанавливаем картинку");
-                                post.setImage(ImageIO.read(rs.getBinaryStream("picture")));
-                                System.out.println("Устанавили картинку");
-                            }*/
                             if (rs.getBytes("picture") != null) {
-                                System.out.println("Устанавливаем картинку");
                                 post.setImage(rs.getBytes("picture"));
-                                System.out.println("Устанавили картинку");
                             }
                         } catch (IllegalArgumentException ignored) {
-                            System.out.println("Не смогли прочитать картинку у поста id=" + post.getId());
+                            log.error("Не смогли прочитать картинку у поста id={}",post.getId());
                         }
-                        System.out.println("Возвращаем пост id=" + post.getId() + ", title=" + post.getTitle() +
-                                ", is image null? - " + (post.getImage() == null));
-                        System.out.println("RETURN");
                         return post;
                     }, id));
         } catch (Exception e) {
-            System.out.println("Грохнулись error=" + e.getClass() + ", msg=" + e.getMessage() );
+            log.error("Ошибка при получении информации о посте: error={}, msg={}",e.getClass(), e.getMessage());
             return Optional.empty();
         }
     }
 
     @Override
-    public void save(Post post) {
-        if (post.getImage() != null) {
-            //byte[] imageBytes = ((DataBufferByte) post.getImage().getData().getDataBuffer()).getData();
-            byte[] imageBytes = post.getImage();
-            jdbcTemplate.update("insert into post(name, post_text, tags, likes_count, picture) values(?, ?, ?, ?, ?)",
-                    post.getTitle(), post.getText(), post.getTags(), post.getLikesCount(), imageBytes);
-        } else
-            jdbcTemplate.update("insert into post(name, post_text, tags, likes_count) values(?, ?, ?, ?)",
-                    post.getTitle(), post.getText(), post.getTags(), post.getLikesCount());
+    public Long save(Post post) {
+        String sql = post.getImage() == null ?
+                "insert into post(name, post_text, tags) values(?, ?, ?) returning id" :
+                "insert into post(name, post_text, tags, picture) values(?, ?, ?, ?) returning id";
+        List<Object> params = formParams(post);
+        return Optional.of(jdbcTemplate.queryForObject(sql, Long.class, params.toArray())).orElse(0L);
+    }
+
+    @Override
+    public void editById(Long id, Post post) {
+        String sql = post.getImage() == null ?
+                "update post set name = ?, post_text = ?, tags = ? where id = ?" :
+                "update post set name = ?, post_text = ?, tags = ?, picture = ? where id = ?";
+        List<Object> params = formParams(post);
+        params.add(id);
+        jdbcTemplate.update(sql, params.toArray());
+    }
+
+    @Override
+    public void likeById(Long id, int likeCount) {
+        jdbcTemplate.update("update post set likes_count = ? where id = ?" , likeCount, id);
     }
 
     @Override
@@ -99,9 +99,11 @@ public class JdbcNativePostRepository implements PostRepository {
         jdbcTemplate.update("delete from post where id = ?", id);
     }
 
-    @Override
-    public void editById(Long id, Post post) {
-        jdbcTemplate.update("update post set name = ?, post_text = ?, tags = ?, likes_count = ?, picture = ? where id = ?",
-                post.getTitle(), post.getText(), post.getTags(), post.getLikesCount(), post.getImage(), id);
+    private List<Object> formParams(Post post) {
+        List<Object> params = new ArrayList<>(){{
+            add(post.getTitle()); add(post.getText()); add(post.getTags());
+        }};
+        if (post.getImage() != null) params.add(post.getImage());
+        return params;
     }
 }
