@@ -1,11 +1,10 @@
 /Users/Dixi/dev/myblog/src/main/java/ru/yandex/practicum/mapper/PostMapper.java
 /Users/Dixi/dev/myblog/src/main/java/ru/yandex/practicum/model/dto/PostDto.java
-/Users/Dixi/dev/myblog/src/main/java/ru/yandex/practicum/controller/HomeController.java
 /Users/Dixi/dev/myblog/src/main/java/ru/yandex/practicum/configuration/ThymeleafConfiguration.java
+/Users/Dixi/dev/myblog/src/main/java/ru/yandex/practicum/configuration/CustomWebAppInitializer.java
 /Users/Dixi/dev/myblog/src/main/java/ru/yandex/practicum/repository/PostRepository.java
 /Users/Dixi/dev/myblog/src/main/java/ru/yandex/practicum/model/dto/PostsWithParamsDto.java
 /Users/Dixi/dev/myblog/src/main/java/ru/yandex/practicum/configuration/DataSourceConfiguration.java
-/Users/Dixi/dev/myblog/src/main/java/ru/yandex/practicum/controller/CommentController.java
 /Users/Dixi/dev/myblog/src/main/java/ru/yandex/practicum/configuration/WebConfiguration.java
 /Users/Dixi/dev/myblog/src/main/java/ru/yandex/practicum/model/entity/Post.java
 /Users/Dixi/dev/myblog/src/main/java/ru/yandex/practicum/repository/CommentRepository.java

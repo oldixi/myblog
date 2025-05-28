@@ -5,12 +5,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.model.dto.PostFullDto;
 import ru.yandex.practicum.model.dto.PostDto;
-import ru.yandex.practicum.model.entity.Post;
 import ru.yandex.practicum.model.dto.PostsWithParamsDto;
+import ru.yandex.practicum.service.CommentService;
 import ru.yandex.practicum.service.PostService;
 
 @Controller
@@ -19,6 +18,12 @@ import ru.yandex.practicum.service.PostService;
 @Slf4j
 public class PostController {
     private final PostService postService;
+    private final CommentService commentService;
+
+    @GetMapping("/")
+    public String redirectPosts() {
+        return "redirect:/blog/posts";
+    }
 
     /*
     GET "posts" - список постов на странице ленты постов
@@ -87,13 +92,28 @@ public class PostController {
        		   "tags" - список тегов поста (по умолчанию, пустая строка)
     Возвращает: редирект на созданный "/posts/{id}"
      */
-    @PostMapping(path = "/add", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
-    public /*ModelAndView*/ String addPost(ModelMap model, @ModelAttribute PostDto postDto) {
-        Post post = postService.savePost(postDto);
-        model.addAttribute("post", post);
+    @PostMapping(consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
+    public /*ModelAndView */String addPost(/*Model model, */@ModelAttribute("post") PostDto post) {
+        log.info("addPost");
+        //model.addAttribute("post", post);
+        PostFullDto postDto = postService.savePost(post);
         //return new ModelAndView("/blog/posts/" + post.getId(), model);
-        return "redirect:/blog/posts/" + post.getId();
+        return "redirect:/blog/posts/" + postDto.getId();
     }
+
+/*    @PostMapping(consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
+    public String editPost(@RequestParam("title") String title,
+                           @RequestParam("text") String text,
+                           @RequestParam("tags") String tags) {
+
+        PostDto post = PostDto.builder()
+                .title(title)
+                .text(text)
+                .tags(tags)
+                .build();
+        PostFullDto postDto = postService.savePost(post);
+        return "redirect:/blog/posts";
+    }*/
 
     /*
     POST "/posts/{id}/delete" - эндпоинт удаления поста
@@ -103,7 +123,7 @@ public class PostController {
     @PostMapping(value = "/{id}/delete")
     public String deletePost(@PathVariable("id") Long id) {
         postService.deletePostById(id);
-        return "redirect:/blog/posts";
+        return "redirect:/posts";
     }
 
     /*
@@ -119,10 +139,10 @@ public class PostController {
     Возвращает:
     редирект на отредактированный "/posts/{id}"
      */
-    @PostMapping(path = "/{id}", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
-    public String editPost(@PathVariable("id") Long id, @ModelAttribute PostDto post) {
+    @PostMapping(value = "/{id}", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
+    public String editPost(@PathVariable("id") Long id, @ModelAttribute("post") PostDto post) {
         postService.editPostById(id, post);
-        return "redirect:/blog/posts/" + id;
+        return "redirect:/posts/" + id;
     }
 
     /*
@@ -131,7 +151,7 @@ public class PostController {
     Возвращает: редирект на форму редактирования поста "add-post.html"
     используется модель для заполнения шаблона: "post" - модель поста (id, title, text, imagePath, likesCount, comments)
      */
-    @PostMapping(value = "/{id}/edit")
+    @GetMapping(value = "/{id}/edit")
     public String editPostPage(@PathVariable("id") Long id, @ModelAttribute PostFullDto post, Model model) {
         model.addAttribute("post", post);
         return "add-post";
@@ -142,9 +162,49 @@ public class PostController {
     Параметры: "id" - идентификатор поста, "like" - если true, то +1 лайк, если "false", то -1 лайк
     Возвращает: редирект на "/posts/{id}"
      */
-    @PostMapping(value = "/{id}/{like}")
-    public String likePost(@PathVariable("id") Long id, @PathVariable("like") boolean like) {
+    @PostMapping(value = "/{id}/like")
+    public String likePost(@PathVariable("id") Long id, @RequestParam("like") boolean like) {
         postService.likePostById(id, like);
-        return "redirect:/blog/posts/" + id;
+        return "redirect:/posts/" + id;
+    }
+
+    /*
+    POST "/posts/{id}/comments" - эндпоинт добавления комментария к посту
+    Параметры: "id" - идентификатор поста, "text" - текст комментария
+    Возвращает: редирект на "/posts/{id}"
+    */
+    @PostMapping("/{id}/comments")
+    public String addComment(Model model,
+                             @PathVariable("id") Long id,
+                             @RequestParam(defaultValue = "", name = "text") String text) {
+        model.addAttribute("text", text);
+        commentService.save(id, text);
+        return "redirect:/posts/" + id;
+    }
+
+    /*
+    POST "/posts/{id}/comments/{commentId}/delete" - эндпоинт удаления комментария
+    Параметры: "id" - идентификатор поста, "commentId" - идентификатор комментария
+    Возвращает: редирект на "/posts/{id}"
+    */
+    @PostMapping(value = "/{id}/comments/{commentId}/delete")
+    public String deleteComment(@PathVariable("id") Long id, @PathVariable("commentId") Long commentId) {
+        commentService.deleteById(commentId);
+        return "redirect:/posts/" + id;
+    }
+
+    /*
+    POST "/posts/{id}/comments/{commentId}" - эндпоинт редактирования комментария
+    Параметры: "id" - идентификатор поста, "commentId" - идентификатор комментария, "text" - текст комментария
+    Возвращает: редирект на "/posts/{id}"
+    */
+    @PostMapping(value = "/{id}/comments/{commentId}")
+    public String editComment(Model model,
+                              @PathVariable("id") Long id,
+                              @PathVariable("commentId") Long commentId,
+                              @RequestParam(defaultValue = "", name = "text") String text) {
+        model.addAttribute("text", text);
+        commentService.edit(id, commentId, text);
+        return "redirect:/posts/" + id;
     }
 }

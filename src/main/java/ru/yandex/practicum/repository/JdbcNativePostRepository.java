@@ -17,10 +17,10 @@ public class JdbcNativePostRepository implements PostRepository {
     private final JdbcTemplate jdbcTemplate;
 
     @Override
-    public List<Post> getPosts(String search, int limit) {
-        System.out.println("Start getPosts: search=" + search + ", limit=" + limit);
-        return jdbcTemplate.query(
-                "select id, name, post_text, tags, likes_count, picture from post where tags like '%'||?||'%' order by id desc limit ?",
+    public List<Post> getPosts(String search, int limit, int offset) {
+        log.info("Start getPosts: limit={}, search={}, offset={}", limit, search, offset);
+        List<Post> posts = jdbcTemplate.query(
+                "select id, name, post_text, tags, likes_count, picture from post where tags like '%'||coalesce(?,'')||'%' order by id desc limit ? offset ?",
                 (rs, rowNum) -> {
                     Post post = Post.builder()
                             .id(rs.getLong("id"))
@@ -39,7 +39,9 @@ public class JdbcNativePostRepository implements PostRepository {
                         log.error("Не смогли прочитать картинку у поста id={}", post.getId());
                     }
                     return post;
-                }, search, limit);
+                }, search, limit, offset);
+        log.info("Отобрано {} постов", posts.size());
+        return posts;
     }
 
     @Override
@@ -97,6 +99,11 @@ public class JdbcNativePostRepository implements PostRepository {
     @Override
     public void deleteById(Long id) {
         jdbcTemplate.update("delete from post where id = ?", id);
+    }
+
+    @Override
+    public int getPostsCount() {
+        return jdbcTemplate.queryForObject("select count(1) from post", Integer.class);
     }
 
     private List<Object> formParams(Post post) {

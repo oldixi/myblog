@@ -1,3 +1,4 @@
+ModelPostTests.class
 IntegrationTests.class
-ModelTests.class
 CoreTests.class
+ModelCommentTest.class

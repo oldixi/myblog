@@ -20,7 +20,6 @@ public class PostMapper {
     private final ModelMapper mapper;
 
     public PostFullDto toDto(Post entity) {
-        log.info("to_Dto entity={}", entity);
         PostFullDto dto = mapper.map(entity, PostFullDto.class);
         if (entity.getText() != null && !entity.getText().isBlank())
             dto.setTextPreview(Arrays.stream(Arrays.stream(entity
@@ -44,5 +43,9 @@ public class PostMapper {
             return post;
         }
         return post;
+    }
+
+    public Post toPost(PostFullDto dto) {
+        return mapper.map(dto, Post.class);
     }
 }

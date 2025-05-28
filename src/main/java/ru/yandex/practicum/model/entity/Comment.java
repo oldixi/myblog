@@ -4,10 +4,9 @@ import lombok.*;
 
 @Data
 @Builder
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@EqualsAndHashCode
 public class Comment {
-    @EqualsAndHashCode.Include
     private Long id;
-    private String commentText;
+    private String text;
     private Long postId;
 }

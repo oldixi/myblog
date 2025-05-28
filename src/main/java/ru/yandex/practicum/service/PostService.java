@@ -21,23 +21,23 @@ public class PostService {
     private final PostMapper postMapper;
 
     public PostsWithParamsDto getPosts(String search, int pageNumber, int pageSize) {
-        //Pageable page = PageRequest.of(pageNumber, pageSize, Sort.by(Sort.Direction.DESC, "id"));
-        List<Post> fullPosts = postRepository.getPosts(search, pageNumber * pageSize);
-        List<Post> subPosts = fullPosts.subList((pageNumber - 1) * pageSize - 1, fullPosts.size() - 1);
-        List<PostFullDto> posts = postMapper.toListDto(subPosts);
-        posts.forEach(post -> post.setComments(commentService.getPostComments(post.getId())));
+        List<Post> posts = postRepository.getPosts(search, pageSize, (pageNumber -1) * pageSize);
+        List<PostFullDto> postsDto = postMapper.toListDto(posts);
+        postsDto.forEach(post -> post.setComments(commentService.getPostComments(post.getId())));
         PagingParametersDto pagingParametersDto = PagingParametersDto.builder()
                 .pageNumber(pageNumber)
                 .pageSize(pageSize)
                 .hasPrevious(pageNumber > 1)
-                .hasNext(pageNumber < Math.ceilDiv(posts.size(), pageSize))
+                .hasNext(pageNumber < Math.ceilDiv(postRepository.getPostsCount(), pageSize))
                 .build();
-        return new PostsWithParamsDto(posts, search, pagingParametersDto);
+        return new PostsWithParamsDto(postsDto, search, pagingParametersDto);
     }
 
     @Transactional
-    public Post savePost(PostDto post) {
-        return postRepository.getById(postRepository.save(postMapper.toPost(post))).orElse(new Post());
+    public PostFullDto savePost(PostDto post) {
+        PostFullDto fullPost = getPostDtoById(postRepository.save(postMapper.toPost(post)));
+        fullPost.setComments(commentService.getPostComments(post.getId()));
+        return fullPost;
     }
 
     @Transactional
@@ -66,6 +66,8 @@ public class PostService {
     }
 
     public PostFullDto getPostDtoById(Long id) {
-        return postMapper.toDto(getPostById(id));
+        PostFullDto post = postMapper.toDto(getPostById(id));
+        post.setComments(commentService.getPostComments(post.getId()));
+        return post;
     }
 }

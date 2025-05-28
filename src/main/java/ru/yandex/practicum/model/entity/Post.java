@@ -8,11 +8,9 @@ import java.awt.image.BufferedImage;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@EqualsAndHashCode
 public class Post {
-    @EqualsAndHashCode.Include
     private Long id;
-    //private BufferedImage image;
     private byte[] image;
     private String title;
     private String text;

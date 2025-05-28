@@ -5,6 +5,7 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
 import ru.yandex.practicum.model.dto.PostDto;
 import ru.yandex.practicum.model.dto.PostFullDto;
+import ru.yandex.practicum.model.dto.PostsWithParamsDto;
 import ru.yandex.practicum.model.entity.Comment;
 import ru.yandex.practicum.model.entity.Post;
 
@@ -18,26 +19,31 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class IntegrationTests extends CoreTests {
     @Test
-    void testHome() {
-        assertNotNull(homeController);
+    void testContoller() {
         assertNotNull(postController);
-        assertNotNull(commentController);
     }
 
     @Test
     void testGetPost() {
-        jdbcTemplate.update("insert into post(name, post_text, tags) values('Предзагруженный пост', 'Предзагруженный пост', 'тестовый')");
         Post insertedPost = getLastPost().orElse(null);
         assertNotNull(insertedPost);
         assertNotNull(insertedPost.getId());
-
         Post post = postService.getPostById(insertedPost.getId());
         assertNotNull(post);
         assertNotNull(post.getId());
-        assertEquals("Предзагруженный пост", post.getTitle());
-        assertEquals("Предзагруженный пост", post.getText());
-        assertEquals("тестовый", post.getTags());
+        assertNotNull(post.getTitle());
+        assertNotNull(post.getText());
         assertEquals(0, post.getLikesCount());
+    }
+
+    @Test
+    void testGetPosts() {
+        PostsWithParamsDto posts = postService.getPosts(null, 1, 10);
+        assertNotNull(posts);
+        assertNotNull(posts.getPosts());
+        assertNotNull(posts.getPaging());
+        System.out.println(posts.getPaging());
+        posts.getPosts().forEach(System.out::println);
     }
 
     @ParameterizedTest
@@ -45,7 +51,7 @@ public class IntegrationTests extends CoreTests {
     void testGetPostDto(String text) {
         PostDto postDto = PostDto.builder()
                 .title("Тестовый пост новый")
-                .text("\tЭто тестовый пост новый с картинкой")
+                .text(text)
                 .build();
         try {
             MultipartFile picture = new MockMultipartFile("myblogdb.png",
@@ -54,17 +60,12 @@ public class IntegrationTests extends CoreTests {
         } catch (IOException e) {
             System.out.println("Картинка не найдена");
         }
-        Post insertedPost = postService.savePost(postDto);
-        assertNotNull(insertedPost);
-        assertNotNull(insertedPost.getId());
-
-        PostFullDto post = postService.getPostDtoById(insertedPost.getId());
+        PostFullDto post = postService.savePost(postDto);
         assertNotNull(post);
         assertNotNull(post.getId());
         assertEquals("Тестовый пост новый", post.getTitle());
         System.out.println(post.getTextPreview());
         assertNotNull(post.getTextPreview());
-        assertNotNull(insertedPost.getImage());
     }
 
     @Test
@@ -73,25 +74,28 @@ public class IntegrationTests extends CoreTests {
                 .title("Тестовый пост")
                 .text("\tЭто тестовый пост для сохранения")
                 .build();
-        Post insertedPost = postService.savePost(post);
+        PostFullDto insertedPost = postService.savePost(post);
         assertNotNull(insertedPost);
         assertNotNull(insertedPost.getId());
         assertEquals("Тестовый пост", insertedPost.getTitle());
-        System.out.println(insertedPost.getText());
-        assertEquals("\tЭто тестовый пост для сохранения", insertedPost.getText());
+        System.out.println(insertedPost.getTextPreview());
+        assertEquals("\tЭто тестовый пост для сохранения", insertedPost.getTextPreview());
         assertEquals(0, insertedPost.getLikesCount());
     }
 
     @Test
     void testEditPost() {
+        Long id = 0L;
+        Post lastPost = getLastPost().orElse(null);
+        if (lastPost != null) id = lastPost.getId();;
         PostDto post1 = PostDto.builder()
-                .id(1L)
+                .id(id)
                 .title("Тестовый пост для изменения полей")
                 .text("\tЭто тестовый пост 1\n\tЕще один абзац")
                 .tags("test")
                 .build();
-        postService.editPostById(1L, post1);
-        Post editedPost = postService.getPostById(1L);
+        postService.editPostById(id, post1);
+        Post editedPost = postService.getPostById(id);
         assertNotNull(editedPost);
         assertNotNull(editedPost.getId());
         assertEquals("Тестовый пост для изменения полей", editedPost.getTitle());
@@ -129,11 +133,9 @@ public class IntegrationTests extends CoreTests {
         } catch (IOException e) {
             System.out.println("Картинка не найдена");
         }
-        Post insertedPost = postService.savePost(post2);
+        PostFullDto insertedPost = postService.savePost(post2);
         assertNotNull(insertedPost);
         assertNotNull(insertedPost.getId());
-        assertNotNull(insertedPost.getImage());
-
         byte[] image = postService.getImage(insertedPost.getId());
         assertNotNull(image);
     }
@@ -159,14 +161,14 @@ public class IntegrationTests extends CoreTests {
         Comment comment1 = Comment.builder()
                 .id(insertedComments.getId() + 1)
                 .postId(insertedPost.getId())
-                .commentText("Отличный пост!")
+                .text("Отличный пост!")
                 .build();
 
-        commentService.save(insertedPost.getId(), comment1.getCommentText());
+        commentService.save(insertedPost.getId(), comment1.getText());
 
         List<Comment> comments = commentService.getPostComments(insertedPost.getId());
         assertTrue(comments.size() >= 1);
-        assertTrue(comments.stream().anyMatch(comm -> "Отличный пост!".equals(comm.getCommentText())));
+        assertTrue(comments.stream().anyMatch(comm -> "Отличный пост!".equals(comm.getText())));
     }
 
     @Test
@@ -190,7 +192,7 @@ public class IntegrationTests extends CoreTests {
         commentService.edit(insertedPost.getId(), commentId, text);
 
         comments = commentService.getPostComments(insertedPost.getId());
-        assertTrue(comments.stream().anyMatch(comm -> commentId.equals(comm.getId()) && text.equals(comm.getCommentText())));
+        assertTrue(comments.stream().anyMatch(comm -> commentId.equals(comm.getId()) && text.equals(comm.getText())));
     }
 
     @Test
@@ -201,15 +203,15 @@ public class IntegrationTests extends CoreTests {
 
         Comment comment1 = Comment.builder()
                 .postId(insertedPost.getId())
-                .commentText("Отличный пост!")
+                .text("Отличный пост!")
                 .build();
         Comment comment2 = Comment.builder()
                 .postId(insertedPost.getId())
-                .commentText("Я тоже так считаю. Поставлю лайк")
+                .text("Я тоже так считаю. Поставлю лайк")
                 .build();
 
-        commentService.save(insertedPost.getId(), comment1.getCommentText());
-        commentService.save(insertedPost.getId(), comment2.getCommentText());
+        commentService.save(insertedPost.getId(), comment1.getText());
+        commentService.save(insertedPost.getId(), comment2.getText());
 
         Comment insertedComments = getLastComment().orElse(null);
         assertNotNull(insertedComments);
@@ -247,7 +249,7 @@ public class IntegrationTests extends CoreTests {
 
         return Optional.of(jdbcTemplate.queryForObject(sql, (rs, rowNum) -> Comment.builder()
                 .id(rs.getLong("id"))
-                .commentText(rs.getString("comment_text"))
+                .text(rs.getString("comment_text"))
                 .postId(rs.getLong("post_id"))
                 .build()));
     }

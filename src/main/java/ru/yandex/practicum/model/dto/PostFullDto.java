@@ -10,9 +10,8 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@EqualsAndHashCode
 public class PostFullDto {
-    @EqualsAndHashCode.Include
     private Long id;
     private String title;
     private String textPreview;

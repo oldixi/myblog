@@ -20,7 +20,7 @@ public class CommentService {
     @Transactional
     public void save(Long postId, String text) {
         Comment comment = Comment.builder()
-                .commentText(text)
+                .text(text)
                 .postId(postId)
                 .build();
         commentRepository.save(comment);
@@ -30,7 +30,7 @@ public class CommentService {
     public void edit(Long postId, Long id, String text) {
         Comment comment = Comment.builder()
                 .postId(postId)
-                .commentText(text)
+                .text(text)
                 .id(id)
                 .build();
         commentRepository.editById(id, comment);

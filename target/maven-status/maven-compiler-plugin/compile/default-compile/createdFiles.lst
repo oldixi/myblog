@@ -9,16 +9,15 @@ ru/yandex/practicum/service/PostService.class
 ru/yandex/practicum/model/dto/PagingParametersDto.class
 ru/yandex/practicum/model/entity/Comment$CommentBuilder.class
 ru/yandex/practicum/model/dto/PagingParametersDto$PagingParametersDtoBuilder.class
-ru/yandex/practicum/controller/HomeController.class
 ru/yandex/practicum/configuration/DataSourceConfiguration.class
 ru/yandex/practicum/configuration/ThymeleafConfiguration.class
-ru/yandex/practicum/controller/CommentController.class
 ru/yandex/practicum/model/entity/Post.class
 ru/yandex/practicum/model/dto/PostFullDto$PostFullDtoBuilder.class
 ru/yandex/practicum/model/dto/PostDto$PostDtoBuilder.class
 ru/yandex/practicum/repository/CommentRepository.class
 ru/yandex/practicum/model/dto/PostFullDto.class
 ru/yandex/practicum/controller/PostController.class
+ru/yandex/practicum/configuration/CustomWebAppInitializer.class
 ru/yandex/practicum/model/entity/Comment.class
 ru/yandex/practicum/model/dto/PostDto.class
 ru/yandex/practicum/configuration/WebConfiguration.class

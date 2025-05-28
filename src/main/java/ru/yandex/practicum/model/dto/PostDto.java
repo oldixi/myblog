@@ -11,8 +11,11 @@ import org.springframework.web.multipart.MultipartFile;
 public class PostDto {
     @EqualsAndHashCode.Include
     private Long id;
+    @EqualsAndHashCode.Include
     private String title;
+    @EqualsAndHashCode.Include
     private String text;
     private MultipartFile image;
+    @EqualsAndHashCode.Include
     private String tags;
 }
