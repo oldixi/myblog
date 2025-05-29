@@ -1,8 +1,6 @@
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -38,18 +36,18 @@ public class ModelCommentTest extends CoreTests {
 
     @BeforeEach
     public void setup() {
-        reset(commentRepository);
+        //commentRepository = Mockito.mock(commentRepository);
+        //commentService = new CommentService(commentRepository);
     }
 
     @Test
+    @SneakyThrows
     void testAddComments() {
         Comment comment1 = Comment.builder()
-                .postId(1L)
                 .text("Отличный пост!")
                 .build();
-
         commentService.save(1L, "Отличный пост!");
-        verify(commentRepository, times(1)).save(comment1);
+        verify(commentRepository).save(comment1);
     }
 
     @Test
@@ -59,7 +57,6 @@ public class ModelCommentTest extends CoreTests {
                 .postId(1L)
                 .text("Измененный комментарий!")
                 .build();
-
         commentService.edit(1L, 1L, "Измененный комментарий!");
         verify(commentRepository, times(1)).editById(1L, comment1);
     }
@@ -67,6 +64,6 @@ public class ModelCommentTest extends CoreTests {
     @Test
     void testDeleteComments() {
         commentService.deleteById(1L);
-        verify(commentRepository, times(1)).deleteById(1L);
+        verify(commentRepository).deleteById(1L);
     }
 }

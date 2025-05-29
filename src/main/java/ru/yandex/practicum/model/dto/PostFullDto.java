@@ -14,9 +14,13 @@ import java.util.List;
 public class PostFullDto {
     private Long id;
     private String title;
-    private String textPreview;
-    //private String imagePath;
+    private List<String> text;
+    private String imagePath;
     private int likesCount;
-    private String tags;
+    private List<String> tags;
     private List<Comment> comments  = new ArrayList<>();
+    public String getTextPreview() {
+        if (text == null || text.isEmpty()) return null;
+        return text.get(0);
+    }
 }

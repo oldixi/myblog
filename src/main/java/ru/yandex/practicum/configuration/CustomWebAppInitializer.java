@@ -1,5 +1,6 @@
 package ru.yandex.practicum.configuration;
 
+import jakarta.servlet.MultipartConfigElement;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletRegistration;
 import org.springframework.core.annotation.Order;
@@ -17,6 +18,7 @@ public class CustomWebAppInitializer implements WebApplicationInitializer {
         rootContext.register(WebConfiguration.class);
 
         container.addListener(new ContextLoaderListener(rootContext));
+        container.setInitParameter("spring.profiles.active", "dev");
 
         AnnotationConfigWebApplicationContext dispatcherContext =
                 new AnnotationConfigWebApplicationContext();
@@ -26,5 +28,6 @@ public class CustomWebAppInitializer implements WebApplicationInitializer {
                 container.addServlet("dispatcher", new DispatcherServlet(dispatcherContext));
         dispatcher.setLoadOnStartup(1);
         dispatcher.addMapping("/");
+        dispatcher.setMultipartConfig(new MultipartConfigElement("/tmp", 1024*1024*5, 1024*1024*5*5, 1024*1024));
     }
 }

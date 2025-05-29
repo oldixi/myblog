@@ -18,7 +18,6 @@ public class JdbcNativePostRepository implements PostRepository {
 
     @Override
     public List<Post> getPosts(String search, int limit, int offset) {
-        log.info("Start getPosts: limit={}, search={}, offset={}", limit, search, offset);
         List<Post> posts = jdbcTemplate.query(
                 "select id, name, post_text, tags, likes_count, picture from post where tags like '%'||coalesce(?,'')||'%' order by id desc limit ? offset ?",
                 (rs, rowNum) -> {
@@ -83,7 +82,8 @@ public class JdbcNativePostRepository implements PostRepository {
 
     @Override
     public void editById(Long id, Post post) {
-        String sql = post.getImage() == null ?
+        log.info("Start editById: post={}", post);
+        String sql = (post.getImage() == null || post.getImage().length == 0) ?
                 "update post set name = ?, post_text = ?, tags = ? where id = ?" :
                 "update post set name = ?, post_text = ?, tags = ?, picture = ? where id = ?";
         List<Object> params = formParams(post);
@@ -110,7 +110,7 @@ public class JdbcNativePostRepository implements PostRepository {
         List<Object> params = new ArrayList<>(){{
             add(post.getTitle()); add(post.getText()); add(post.getTags());
         }};
-        if (post.getImage() != null) params.add(post.getImage());
+        if (post.getImage() != null && post.getImage().length > 0) params.add(post.getImage());
         return params;
     }
 }

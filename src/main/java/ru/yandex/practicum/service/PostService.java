@@ -1,6 +1,7 @@
 package ru.yandex.practicum.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.model.dto.PostFullDto;
@@ -35,7 +36,7 @@ public class PostService {
 
     @Transactional
     public PostFullDto savePost(PostDto post) {
-        PostFullDto fullPost = getPostDtoById(postRepository.save(postMapper.toPost(post)));
+        PostFullDto fullPost = getPostFullDtoById(postRepository.save(postMapper.toPost(post)));
         fullPost.setComments(commentService.getPostComments(post.getId()));
         return fullPost;
     }
@@ -65,9 +66,13 @@ public class PostService {
         return postRepository.getById(id).orElse(new Post()).getImage();
     }
 
-    public PostFullDto getPostDtoById(Long id) {
+    public PostFullDto getPostFullDtoById(Long id) {
         PostFullDto post = postMapper.toDto(getPostById(id));
         post.setComments(commentService.getPostComments(post.getId()));
         return post;
+    }
+
+    public PostDto getPostDtoById(Long id) {
+        return postMapper.toPostDto(getPostById(id));
     }
 }

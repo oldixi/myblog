@@ -1,22 +1,19 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
-
+<html lang="en">
 <head>
-    <title>Витрина товаров</title>
+    <title>Б Л О Г</title>
 </head>
-
 <body>
 <a href="/blog/posts" style="float:right;">
     <b>НА ГЛАВНУЮ &cudarrr;</b>
 </a>
-<form method="POST" th:action="${post==null ? '/blog/posts' : '/blog/posts/'+post.getId()}" enctype="multipart/form-data">
+
+<form th:action="${post==null ? '/blog/posts' : '/blog/posts/'+post.getId()}" method="POST" enctype="multipart/form-data">
     <table style="width:50%;margin-left:auto;margin-right:auto;">
         <tr>
             <td>
                 <h3>Название</h3>
-                <label>
-                    <textarea rows="2" style="width: 100%;" name="title" th:text="${post==null ? '' : post.getTitle()}"></textarea>
-                </label>
+                <textarea rows="2" style="width: 100%;" name="title" th:text="${post==null ? '' : post.getTitle()}"></textarea>
             </td>
         </tr>
         <tr>
@@ -28,17 +25,13 @@
         <tr>
             <td>
                 <h3>Теги</h3>
-                <label>
-                    <textarea rows="2" style="width: 100%;" name="tags" th:text="${post==null ? '' : post.getTags()}"></textarea>
-                </label>
+                <textarea rows="2" style="width: 100%;" name="tags" th:text="${post==null ? '' : post.getTags()}"></textarea>
             </td>
         </tr>
         <tr>
             <td>
                 <h3>Текст</h3>
-                <label>
-                    <textarea rows="30" style="width: 100%;" name="text" th:text="${post==null ? '' : post.getText()}"></textarea>
-                </label>
+                <textarea rows="30" style="width: 100%;" name="text" th:text="${post==null ? '' : post.getText()}"></textarea>
             </td>
         </tr>
         <tr>
@@ -48,4 +41,6 @@
         </tr>
     </table>
 </form>
+
 </body>
+</html>

@@ -2,7 +2,6 @@ package ru.yandex.practicum.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -59,16 +58,16 @@ public class PostController {
     */
     @GetMapping("/{id}")
     public String getPost(@PathVariable("id") Long id, Model model) {
-        PostFullDto post = postService.getPostDtoById(id);
+        PostFullDto post = postService.getPostFullDtoById(id);
         model.addAttribute("post", post);
         return "post";
     }
 
     /*
-    GET "/images/{id}" -эндпоинт, возвращающий набор байт картинки поста
+    GET "/image/{id}" -эндпоинт, возвращающий набор байт картинки поста
     Параметры: "id" - идентификатор поста
     */
-    @GetMapping("/images/{id}")
+    @GetMapping("/image/{id}")
     @ResponseBody
     public byte[] getImage(@PathVariable("id") Long id) {
         return postService.getImage(id);
@@ -92,28 +91,11 @@ public class PostController {
        		   "tags" - список тегов поста (по умолчанию, пустая строка)
     Возвращает: редирект на созданный "/posts/{id}"
      */
-    @PostMapping(consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
-    public /*ModelAndView */String addPost(/*Model model, */@ModelAttribute("post") PostDto post) {
-        log.info("addPost");
-        //model.addAttribute("post", post);
+    @PostMapping()
+    public String addPost(@ModelAttribute("post") PostDto post) {
         PostFullDto postDto = postService.savePost(post);
-        //return new ModelAndView("/blog/posts/" + post.getId(), model);
-        return "redirect:/blog/posts/" + postDto.getId();
+        return "redirect:/posts/" + postDto.getId();
     }
-
-/*    @PostMapping(consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
-    public String editPost(@RequestParam("title") String title,
-                           @RequestParam("text") String text,
-                           @RequestParam("tags") String tags) {
-
-        PostDto post = PostDto.builder()
-                .title(title)
-                .text(text)
-                .tags(tags)
-                .build();
-        PostFullDto postDto = postService.savePost(post);
-        return "redirect:/blog/posts";
-    }*/
 
     /*
     POST "/posts/{id}/delete" - эндпоинт удаления поста
@@ -139,7 +121,7 @@ public class PostController {
     Возвращает:
     редирект на отредактированный "/posts/{id}"
      */
-    @PostMapping(value = "/{id}", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
+    @PostMapping("/{id}")
     public String editPost(@PathVariable("id") Long id, @ModelAttribute("post") PostDto post) {
         postService.editPostById(id, post);
         return "redirect:/posts/" + id;
@@ -152,7 +134,8 @@ public class PostController {
     используется модель для заполнения шаблона: "post" - модель поста (id, title, text, imagePath, likesCount, comments)
      */
     @GetMapping(value = "/{id}/edit")
-    public String editPostPage(@PathVariable("id") Long id, @ModelAttribute PostFullDto post, Model model) {
+    public String editPostPage(@PathVariable("id") Long id, Model model) {
+        PostDto post = postService.getPostDtoById(id);
         model.addAttribute("post", post);
         return "add-post";
     }

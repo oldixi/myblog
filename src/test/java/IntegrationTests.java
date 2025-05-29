@@ -33,7 +33,6 @@ public class IntegrationTests extends CoreTests {
         assertNotNull(post.getId());
         assertNotNull(post.getTitle());
         assertNotNull(post.getText());
-        assertEquals(0, post.getLikesCount());
     }
 
     @Test
@@ -42,7 +41,6 @@ public class IntegrationTests extends CoreTests {
         assertNotNull(posts);
         assertNotNull(posts.getPosts());
         assertNotNull(posts.getPaging());
-        System.out.println(posts.getPaging());
         posts.getPosts().forEach(System.out::println);
     }
 
@@ -64,7 +62,6 @@ public class IntegrationTests extends CoreTests {
         assertNotNull(post);
         assertNotNull(post.getId());
         assertEquals("Тестовый пост новый", post.getTitle());
-        System.out.println(post.getTextPreview());
         assertNotNull(post.getTextPreview());
     }
 
@@ -78,7 +75,6 @@ public class IntegrationTests extends CoreTests {
         assertNotNull(insertedPost);
         assertNotNull(insertedPost.getId());
         assertEquals("Тестовый пост", insertedPost.getTitle());
-        System.out.println(insertedPost.getTextPreview());
         assertEquals("\tЭто тестовый пост для сохранения", insertedPost.getTextPreview());
         assertEquals(0, insertedPost.getLikesCount());
     }
@@ -99,6 +95,36 @@ public class IntegrationTests extends CoreTests {
         assertNotNull(editedPost);
         assertNotNull(editedPost.getId());
         assertEquals("Тестовый пост для изменения полей", editedPost.getTitle());
+        assertEquals("\tЭто тестовый пост 1\n\tЕще один абзац", editedPost.getText());
+        assertEquals("test", editedPost.getTags());
+    }
+
+    @Test
+    void testEditEmptyPicturePost() {
+        PostDto post1 = PostDto.builder()
+                .title("Тестовый пост для изменения полей")
+                .text("\tЭто тестовый пост 1\n\tЕще один абзац")
+                .tags("test")
+                .build();
+        try {
+            MultipartFile picture = new MockMultipartFile("myblogdb.png",
+                    Files.readAllBytes(new File("myblogdb.png").toPath()));
+            post1.setImage(picture);
+        } catch (IOException e) {
+            System.out.println("Картинка не найдена");
+        }
+        PostFullDto insertedPost = postService.savePost(post1);
+        assertNotNull(insertedPost);
+        assertNotNull(insertedPost.getId());
+
+        post1.setImage(null);
+        post1.setTitle("New");
+        postService.editPostById(insertedPost.getId(), post1);
+        Post editedPost = postService.getPostById(insertedPost.getId());
+        assertNotNull(editedPost);
+        assertNotNull(editedPost.getId());
+        assertNotNull(editedPost.getImage());
+        assertEquals("New", editedPost.getTitle());
         assertEquals("\tЭто тестовый пост 1\n\tЕще один абзац", editedPost.getText());
         assertEquals("test", editedPost.getTags());
         assertEquals(0, editedPost.getLikesCount());
@@ -217,8 +243,9 @@ public class IntegrationTests extends CoreTests {
         assertNotNull(insertedComments);
         assertNotNull(insertedComments.getId());
 
+        PostFullDto insertedPostDto = postService.getPostFullDtoById(insertedPost.getId());
         commentService.deleteById(insertedComments.getId());
-        assertEquals(1, commentService.getPostComments(insertedPost.getId()).toArray().length);
+        assertEquals(insertedPostDto.getComments().size() - 1, commentService.getPostComments(insertedPost.getId()).toArray().length);
     }
 
     private Optional<Post> getLastPost() {

@@ -2,8 +2,6 @@ package ru.yandex.practicum.model.entity;
 
 import lombok.*;
 
-import java.awt.image.BufferedImage;
-
 @Data
 @Builder
 @AllArgsConstructor

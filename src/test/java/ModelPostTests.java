@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -97,17 +98,17 @@ public class ModelPostTests extends CoreTests {
         PostFullDto postDto = PostFullDto.builder()
                 .id(1L)
                 .title("Тестовый пост новый")
-                .textPreview("\tЭто тестовый пост новый с картинкой")
+                .text(List.of("Это тестовый пост новый с картинкой", "Второй абзац"))
                 .build();
 
         when(postRepository.getById(anyLong())).thenReturn(Optional.of(post));
         when(postMapper.toDto(any(Post.class))).thenReturn(postDto);
         when(commentService.getPostComments(anyLong())).thenReturn(null);
 
-        PostFullDto testPost = postService.getPostDtoById(1L);
+        PostFullDto testPost = postService.getPostFullDtoById(1L);
         assertNotNull(testPost);
         assertNotNull(testPost.getId());
-        System.out.println(postDto.getTextPreview());
+        System.out.println(postDto.getText());
         assertEquals(postDto, testPost);
 
     }
@@ -141,13 +142,6 @@ public class ModelPostTests extends CoreTests {
         } catch (IOException e) {
             System.out.println("Картинка не найдена");
         }
-
-        PostFullDto postFullDto = PostFullDto.builder()
-                .id(1L)
-                .title("Тестовый пост")
-                .textPreview("Это тестовый пост для сохранения")
-                .tags("test")
-                .build();
 
         when(postMapper.toPost(any(PostDto.class))).thenReturn(post);
         when(postRepository.getById(anyLong())).thenReturn(Optional.of(post));
