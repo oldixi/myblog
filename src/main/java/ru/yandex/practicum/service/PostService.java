@@ -1,7 +1,7 @@
 package ru.yandex.practicum.service;
 
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.model.dto.PostFullDto;
@@ -15,11 +15,16 @@ import ru.yandex.practicum.repository.PostRepository;
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
+//При таком внедрении не работают Mock-тесты -> пришлось отказаться в пользу не самого хорошего способа внедрения
+//через @Autowired
+//@RequiredArgsConstructor
 public class PostService {
-    private final PostRepository postRepository;
-    private final CommentService commentService;
-    private final PostMapper postMapper;
+    @Autowired
+    private PostRepository postRepository;
+    @Autowired
+    private CommentService commentService;
+    @Autowired
+    private PostMapper postMapper;
 
     public PostsWithParamsDto getPosts(String search, int pageNumber, int pageSize) {
         List<Post> posts = postRepository.getPosts(search, pageSize, (pageNumber -1) * pageSize);
@@ -37,7 +42,9 @@ public class PostService {
     @Transactional
     public PostFullDto savePost(PostDto post) {
         PostFullDto fullPost = getPostFullDtoById(postRepository.save(postMapper.toPost(post)));
-        fullPost.setComments(commentService.getPostComments(post.getId()));
+        if (fullPost != null) {
+            fullPost.setComments(commentService.getPostComments(post.getId()));
+        }
         return fullPost;
     }
 
@@ -53,8 +60,11 @@ public class PostService {
 
     @Transactional
     public void likePostById(Long id, boolean like) {
+        int currentLikesCount = 0;
         Post post = getPostById(id);
-        int currentLikesCount = post.getLikesCount();
+        if (post != null) {
+            currentLikesCount = post.getLikesCount();
+        }
         postRepository.likeById(id, (like ? currentLikesCount + 1 : (currentLikesCount > 0 ? currentLikesCount - 1 : 0)));
     }
 
@@ -68,7 +78,9 @@ public class PostService {
 
     public PostFullDto getPostFullDtoById(Long id) {
         PostFullDto post = postMapper.toDto(getPostById(id));
-        post.setComments(commentService.getPostComments(post.getId()));
+        if (post != null) {
+            post.setComments(commentService.getPostComments(post.getId()));
+        }
         return post;
     }
 

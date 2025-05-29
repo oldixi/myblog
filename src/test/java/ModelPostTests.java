@@ -8,6 +8,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
+import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
 import ru.yandex.practicum.mapper.PostMapper;
@@ -33,6 +35,8 @@ import static org.mockito.Mockito.*;
 @MockitoSettings(strictness = Strictness.LENIENT)
 @Slf4j
 public class ModelPostTests extends CoreTests {
+    @Autowired
+    private ModelMapper mapper;
     @Mock
     private PostRepository postRepository;
     @Mock
@@ -52,7 +56,7 @@ public class ModelPostTests extends CoreTests {
 
     @AfterAll
     public static void tearDownAfterClass() {
-        log.info("Все тесты проведены");
+        log.info("Завершили запуск тестов");
     }
 
     @Test
@@ -69,7 +73,7 @@ public class ModelPostTests extends CoreTests {
                     Files.readAllBytes(new File("myblogdb.png").toPath()));
             post.setImage(picture.getBytes());
         } catch (IOException e) {
-            System.out.println("Картинка не найдена");
+            log.info("Картинка не найдена");
         }
 
         when(postRepository.getById(anyLong())).thenReturn(Optional.of(post));
@@ -93,7 +97,7 @@ public class ModelPostTests extends CoreTests {
                     Files.readAllBytes(new File("myblogdb.png").toPath()));
             post.setImage(picture.getBytes());
         } catch (IOException e) {
-            System.out.println("Картинка не найдена");
+            log.info("Картинка не найдена");
         }
         PostFullDto postDto = PostFullDto.builder()
                 .id(1L)
@@ -108,7 +112,6 @@ public class ModelPostTests extends CoreTests {
         PostFullDto testPost = postService.getPostFullDtoById(1L);
         assertNotNull(testPost);
         assertNotNull(testPost.getId());
-        System.out.println(postDto.getText());
         assertEquals(postDto, testPost);
 
     }
@@ -127,7 +130,7 @@ public class ModelPostTests extends CoreTests {
                     Files.readAllBytes(new File("myblogdb.png").toPath()));
             post.setImage(picture.getBytes());
         } catch (IOException e) {
-            System.out.println("Картинка не найдена");
+            log.info("Картинка не найдена");
         }
 
         PostDto postDto = PostDto.builder()
@@ -140,13 +143,23 @@ public class ModelPostTests extends CoreTests {
                     Files.readAllBytes(new File("myblogdb.png").toPath()));
             postDto.setImage(picture);
         } catch (IOException e) {
-            System.out.println("Картинка не найдена");
+            log.info("Картинка не найдена");
         }
+
+        PostFullDto postfullDto = PostFullDto.builder()
+                .id(1L)
+                .title("Тестовый пост")
+                .text(List.of("\tЭто тестовый пост для сохранения"))
+                .tags(List.of("test"))
+                .likesCount(0)
+                .imagePath("/image/1")
+                .build();
 
         when(postMapper.toPost(any(PostDto.class))).thenReturn(post);
         when(postRepository.getById(anyLong())).thenReturn(Optional.of(post));
-        when(commentRepository.getPostComments(anyLong())).thenReturn(new ArrayList<>());
         when(postRepository.save(any(Post.class))).thenReturn(1L);
+        when(commentRepository.getPostComments(anyLong())).thenReturn(new ArrayList<>());
+        when(postMapper.toDto(any(Post.class))).thenReturn(postfullDto);
 
         PostFullDto insertedPost = postService.savePost(postDto);
         assertNotNull(insertedPost);
@@ -216,7 +229,7 @@ public class ModelPostTests extends CoreTests {
                     Files.readAllBytes(new File("myblogdb.png").toPath()));
             post.setImage(picture.getBytes());
         } catch (IOException e) {
-            System.out.println("Картинка не найдена");
+            log.info("Картинка не найдена");
         }
 
         when(postRepository.getById(anyLong())).thenReturn(Optional.of(post));

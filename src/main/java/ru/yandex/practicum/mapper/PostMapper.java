@@ -24,11 +24,13 @@ public class PostMapper {
 
     public PostFullDto toDto(Post entity) {
         PostFullDto dto = mapper.map(entity, PostFullDto.class);
-        if (entity.getText() != null && !entity.getText().isBlank())
-            dto.setText(Arrays.stream(entity.getText().split("\n")).toList());
-        if (entity.getTags() != null && !entity.getTags().isBlank())
-            dto.setTags(Arrays.stream(entity.getTags().split(",|, | ")).toList());
-        dto.setImagePath(imagePath + dto.getId());
+        if (dto != null) {
+            if (entity.getText() != null && !entity.getText().isBlank())
+                dto.setText(Arrays.stream(entity.getText().split("\n")).toList());
+            if (entity.getTags() != null && !entity.getTags().isBlank())
+                dto.setTags(Arrays.stream(entity.getTags().split(",|, | ")).toList());
+            dto.setImagePath(imagePath + dto.getId());
+        }
         return dto;
     }
 
@@ -38,11 +40,13 @@ public class PostMapper {
 
     public Post toPost(PostDto dto) {
         Post post = mapper.map(dto, Post.class);
-        try {
-            if (dto.getImage() != null && !dto.getImage().isEmpty())
-                post.setImage(dto.getImage().getBytes());
-        } catch (IOException e) {
-            return post;
+        if (post != null) {
+            try {
+                if (dto.getImage() != null && !dto.getImage().isEmpty())
+                    post.setImage(dto.getImage().getBytes());
+            } catch (IOException e) {
+                return post;
+            }
         }
         return post;
     }

@@ -2,8 +2,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
+import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
@@ -36,14 +35,13 @@ public class ModelCommentTest extends CoreTests {
 
     @BeforeEach
     public void setup() {
-        //commentRepository = Mockito.mock(commentRepository);
-        //commentService = new CommentService(commentRepository);
     }
 
     @Test
     @SneakyThrows
     void testAddComments() {
         Comment comment1 = Comment.builder()
+                .postId(1L)
                 .text("Отличный пост!")
                 .build();
         commentService.save(1L, "Отличный пост!");

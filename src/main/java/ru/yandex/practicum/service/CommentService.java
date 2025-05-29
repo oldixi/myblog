@@ -1,6 +1,6 @@
 package ru.yandex.practicum.service;
 
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.model.entity.Comment;
@@ -9,9 +9,12 @@ import ru.yandex.practicum.repository.CommentRepository;
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
+//При таком внедрении не работают Mock-тесты -> пришлось отказаться в пользу не самого хорошего способа внедрения
+//через @Autowired
+//@RequiredArgsConstructor
 public class CommentService {
-    private final CommentRepository commentRepository;
+    @Autowired
+    private CommentRepository commentRepository;
 
     public List<Comment> getPostComments(Long postId) {
         return commentRepository.getPostComments(postId);
