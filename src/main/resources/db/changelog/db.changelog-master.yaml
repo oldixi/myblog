@@ -1,0 +1,71 @@
+databaseChangeLog:
+  - changeSet:
+      id: create_post
+      author: oldixi
+      changes:
+        - createTable:
+            tableName: posts
+            remarks: Посты
+            columns:
+              - column:
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                  name: id
+                  type: bigserial
+                  remarks: id поста
+                  autoIncrement: true
+              - column:
+                  constraints:
+                    nullable: false
+                  name: title
+                  type: varchar(250)
+                  remarks: Наименование поста
+              - column:
+                  constraints:
+                    nullable: false
+                  name: text
+                  type: text
+                  remarks: Текст поста
+              - column:
+                  name: tags
+                  type: varchar(4000)
+                  remarks: Теги
+              - column:
+                  name: likes_count
+                  type: integer
+                  remarks: Теги
+                  defaultValueNumeric: "0"
+              - column:
+                  name: image
+                  type: bytea
+                  remarks: Картинка
+
+  - changeSet:
+      id: create_comment
+      author: oldixi
+      changes:
+        - createTable:
+            tableName: comments
+            remarks: Комментарии к постам
+            columns:
+              - column:
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                  name: id
+                  type: bigserial
+                  remarks: id комментария
+                  autoIncrement: true
+              - column:
+                  constraints:
+                    nullable: false
+                  name: post_id
+                  type: bigint
+                  remarks: Наименование поста
+              - column:
+                  constraints:
+                    nullable: false
+                  name: text
+                  type: text
+                  remarks: Текст комментария

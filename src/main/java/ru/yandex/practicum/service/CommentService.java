@@ -1,42 +1,42 @@
 package ru.yandex.practicum.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.yandex.practicum.mapper.CommentMapper;
+import ru.yandex.practicum.model.dto.CommentDto;
 import ru.yandex.practicum.model.entity.Comment;
 import ru.yandex.practicum.repository.CommentRepository;
 
 import java.util.List;
 
 @Service
-//При таком внедрении не работают Mock-тесты -> пришлось отказаться в пользу не самого хорошего способа внедрения
-//через @Autowired
-//@RequiredArgsConstructor
+@RequiredArgsConstructor
 public class CommentService {
-    @Autowired
-    private CommentRepository commentRepository;
+    private final CommentRepository commentRepository;
+    private final CommentMapper commentMapper;
 
-    public List<Comment> getPostComments(Long postId) {
-        return commentRepository.getPostComments(postId);
+    public List<CommentDto> getPostComments(Long postId) {
+        return commentMapper.toCommentsDto(commentRepository.getByPostId(postId));
     }
 
     @Transactional
-    public void save(Long postId, String text) {
-        Comment comment = Comment.builder()
+    public Comment save(Long postId, String text) {
+        CommentDto comment = CommentDto.builder()
                 .text(text)
                 .postId(postId)
                 .build();
-        commentRepository.save(comment);
+        return commentRepository.save(commentMapper.toComment(comment));
     }
 
     @Transactional
-    public void edit(Long postId, Long id, String text) {
-        Comment comment = Comment.builder()
+    public Comment edit(Long postId, Long id, String text) {
+        CommentDto comment = CommentDto.builder()
                 .postId(postId)
                 .text(text)
                 .id(id)
                 .build();
-        commentRepository.editById(id, comment);
+        return commentRepository.save(commentMapper.toComment(comment));
     }
 
     @Transactional

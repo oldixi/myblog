@@ -4,10 +4,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.model.dto.PostFullDto;
 import ru.yandex.practicum.model.dto.PostDto;
 import ru.yandex.practicum.model.entity.Post;
+import ru.yandex.practicum.service.CommentService;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -18,6 +20,7 @@ import java.util.List;
 @Slf4j
 public class PostMapper {
     private final ModelMapper mapper;
+    private final CommentService commentService;
 
     @Value("${image.path}")
     private String imagePath;
@@ -30,11 +33,12 @@ public class PostMapper {
             if (entity.getTags() != null && !entity.getTags().isBlank())
                 dto.setTags(Arrays.stream(entity.getTags().split(",|, | ")).toList());
             dto.setImagePath(imagePath + dto.getId());
+            dto.setComments(commentService.getPostComments(entity.getId()));
         }
         return dto;
     }
 
-    public List<PostFullDto> toListDto(List<Post> entities) {
+    public List<PostFullDto> toListDto(Page<Post> entities) {
         return entities.stream().map(this::toDto).toList();
     }
 
@@ -51,6 +55,11 @@ public class PostMapper {
         return post;
     }
 
+    public Post toPost(PostDto dto, int likesCount) {
+        Post post = toPost(dto);
+        if (likesCount != 0) post.setLikesCount(likesCount);
+        return post;
+    }
     public PostDto toPostDto(Post post) {
         return mapper.map(post, PostDto.class);
     }

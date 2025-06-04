@@ -1,7 +1,10 @@
 package ru.yandex.practicum.service;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.model.dto.PostFullDto;
@@ -15,37 +18,33 @@ import ru.yandex.practicum.repository.PostRepository;
 import java.util.List;
 
 @Service
-//При таком внедрении не работают Mock-тесты -> пришлось отказаться в пользу не самого хорошего способа внедрения
-//через @Autowired
-//@RequiredArgsConstructor
+@RequiredArgsConstructor
 public class PostService {
-    @Autowired
-    private PostRepository postRepository;
-    @Autowired
-    private CommentService commentService;
-    @Autowired
-    private PostMapper postMapper;
+    private final PostRepository postRepository;
+    private final PostMapper postMapper;
 
     public PostsWithParamsDto getPosts(String search, int pageNumber, int pageSize) {
-        List<Post> posts = postRepository.getPosts(search, pageSize, (pageNumber -1) * pageSize);
+        final Pageable page = PageRequest.of(pageNumber - 1, pageSize, Sort.by(Sort.Direction.DESC, "id"));
+
+        Page<Post> posts;
+        if (search != null && !search.isBlank())
+            posts = postRepository.getPostsByTagsLike(search, page);
+        else
+            posts = postRepository.findAll(page);
         List<PostFullDto> postsDto = postMapper.toListDto(posts);
-        postsDto.forEach(post -> post.setComments(commentService.getPostComments(post.getId())));
+
         PagingParametersDto pagingParametersDto = PagingParametersDto.builder()
                 .pageNumber(pageNumber)
                 .pageSize(pageSize)
                 .hasPrevious(pageNumber > 1)
-                .hasNext(pageNumber < Math.ceilDiv(postRepository.getPostsCount(), pageSize))
+                .hasNext(pageNumber < Math.ceilDiv(postRepository.count(), pageSize))
                 .build();
         return new PostsWithParamsDto(postsDto, search, pagingParametersDto);
     }
 
     @Transactional
     public PostFullDto savePost(PostDto post) {
-        PostFullDto fullPost = getPostFullDtoById(postRepository.save(postMapper.toPost(post)));
-        if (fullPost != null) {
-            fullPost.setComments(commentService.getPostComments(post.getId()));
-        }
-        return fullPost;
+        return postMapper.toDto(postRepository.save(postMapper.toPost(post)));
     }
 
     @Transactional
@@ -55,7 +54,13 @@ public class PostService {
 
     @Transactional
     public void editPostById(Long id, PostDto post) {
-        postRepository.editById(id, postMapper.toPost(post));
+        if (post.getId() != null) {
+            if (post.getImage() == null || post.getImage().isEmpty())
+                postRepository.editByIdWithoutImage(id, post.getTitle(), post.getText(), post.getTags());
+            else {
+                postRepository.save(postMapper.toPost(post, getPostById(id).getLikesCount()));
+            }
+        }
     }
 
     @Transactional
@@ -69,19 +74,15 @@ public class PostService {
     }
 
     public Post getPostById(Long id) {
-        return postRepository.getById(id).orElse(new Post());
+        return postRepository.findById(id).orElse(new Post());
     }
 
     public byte[] getImage(Long id) {
-        return postRepository.getById(id).orElse(new Post()).getImage();
+        return postRepository.findById(id).orElse(new Post()).getImage();
     }
 
     public PostFullDto getPostFullDtoById(Long id) {
-        PostFullDto post = postMapper.toDto(getPostById(id));
-        if (post != null) {
-            post.setComments(commentService.getPostComments(post.getId()));
-        }
-        return post;
+        return postMapper.toDto(getPostById(id));
     }
 
     public PostDto getPostDtoById(Long id) {

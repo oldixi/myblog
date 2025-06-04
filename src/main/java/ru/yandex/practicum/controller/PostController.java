@@ -12,7 +12,7 @@ import ru.yandex.practicum.service.CommentService;
 import ru.yandex.practicum.service.PostService;
 
 @Controller
-@RequestMapping("/posts")
+@RequestMapping("/blog/posts")
 @RequiredArgsConstructor
 @Slf4j
 public class PostController {
@@ -93,8 +93,9 @@ public class PostController {
      */
     @PostMapping()
     public String addPost(@ModelAttribute("post") PostDto post) {
+        log.info("Start addPost: postDto={}", post);
         PostFullDto postDto = postService.savePost(post);
-        return "redirect:/posts/" + postDto.getId();
+        return "redirect:/blog/posts/" + postDto.getId();
     }
 
     /*
@@ -105,7 +106,7 @@ public class PostController {
     @PostMapping(value = "/{id}/delete")
     public String deletePost(@PathVariable("id") Long id) {
         postService.deletePostById(id);
-        return "redirect:/posts";
+        return "redirect:/blog/posts";
     }
 
     /*
@@ -124,7 +125,7 @@ public class PostController {
     @PostMapping("/{id}")
     public String editPost(@PathVariable("id") Long id, @ModelAttribute("post") PostDto post) {
         postService.editPostById(id, post);
-        return "redirect:/posts/" + id;
+        return "redirect:/blog/posts/" + id;
     }
 
     /*
@@ -148,7 +149,7 @@ public class PostController {
     @PostMapping(value = "/{id}/like")
     public String likePost(@PathVariable("id") Long id, @RequestParam("like") boolean like) {
         postService.likePostById(id, like);
-        return "redirect:/posts/" + id;
+        return "redirect:/blog/posts/" + id;
     }
 
     /*
@@ -162,7 +163,7 @@ public class PostController {
                              @RequestParam(defaultValue = "", name = "text") String text) {
         model.addAttribute("text", text);
         commentService.save(id, text);
-        return "redirect:/posts/" + id;
+        return "redirect:/blog/posts/" + id;
     }
 
     /*
@@ -173,7 +174,7 @@ public class PostController {
     @PostMapping(value = "/{id}/comments/{commentId}/delete")
     public String deleteComment(@PathVariable("id") Long id, @PathVariable("commentId") Long commentId) {
         commentService.deleteById(commentId);
-        return "redirect:/posts/" + id;
+        return "redirect:/blog/posts/" + id;
     }
 
     /*
@@ -188,6 +189,6 @@ public class PostController {
                               @RequestParam(defaultValue = "", name = "text") String text) {
         model.addAttribute("text", text);
         commentService.edit(id, commentId, text);
-        return "redirect:/posts/" + id;
+        return "redirect:/blog/posts/" + id;
     }
 }
